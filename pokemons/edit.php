@@ -21,9 +21,8 @@ try {
         )
     );
 } catch (PDOException $e) {
-    //header('Location:..');
-    var_dump($connection);
-    //exit;
+    header('Location:..');
+    exit;
 }
 
 if(isset($_GET['id'])) {
@@ -131,22 +130,45 @@ if($evolutions == 0) {
             </div>
             <div class="container">
             <?php
-                if(isset($_GET['op']) && isset($_GET['result'])) {
-                    if($_GET['result'] > 0) {
-                        ?>
-                        <div class="alert alert-primary" role="alert">
-                            result: <?= $_GET['op'] . ' ' . $_GET['result'] ?>
-                        </div>
-                        <?php 
-                    } else {
-                        ?>
-                        <div class="alert alert-danger" role="alert">
-                            result: <?= $_GET['op'] . ' ' . $_GET['result'] ?>
-                        </div>
-                        <?php
-                        }
-                }
+            if (isset($_GET['op']) && isset($_GET['result'])) {
+                if ($_GET['result'] >= 0) {
+            ?>
+                    <div class="alert alert-primary" role="alert">
+                        El pokemon se ha actualizado correctamente, su id es <?= $_GET['result'] ?>
+                    </div>
+                <?php
+                } else {
                 ?>
+                    <div class="alert alert-danger" role="alert">
+                        <?php
+                                $error_message = '';
+                                $result = $_GET['result'];
+                                switch ($result) {
+                                    case -1:
+                                        $error_message = 'El nombre que intenta asignarle al pokemon ya existe en la base de datos, pruebe otro';
+                                        break;
+                                    case -2:
+                                        $error_message = 'Los datos enviados no son validos';
+                                        break;
+                                    case -3:
+                                        $error_message = 'no se han mandado los datos necesarios para realizar la actualizacion';
+                                        break;
+                                    case -4:
+                                        $error_message = 'Ha ocurrido un error de conexion con la base de datos';
+                                        break;
+                                    default:
+                                        $error_message = 'Ha ocurrido un error inesperado';
+                                }
+                            
+                        ?>
+
+                        <?= $error_message ?>
+
+                    </div>
+            <?php
+                    }
+                }
+            ?>
                 <div>
                     <form action="update.php" method="post">
                         <div class="form-group">

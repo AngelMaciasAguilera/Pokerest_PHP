@@ -1,10 +1,32 @@
 <?php
+/*Primero compruebo que me llega algun id de un pokemon al que tenga que actualizar sino no continuo*/
+$id = -1;
+if (isset($_POST['id'])) {
+    $id = $_POST['id'];
+} else {
+    $url = '.?op=updateproduct&result=noid';
+    header('Location: ' . $url);
+    exit;
 
+    echo $_POST['id'];
+}
+
+$resultado = 0;
+$url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+/*Identificacion de errores segun el valor que mi $resultado contenga:
+  > 0 -> Todo ha salido correcto 
+  -1 -> nombre duplicado o ya existente en la base de datos.
+  -2 -> los datos no son validos para realizar su insercion
+  -3 -> no se han mandado todos lo datos necesarios para realizar la insercion
+  -4 -> error de conexion.   
+*/
+
+
 session_start();
-if(!isset($_SESSION['user'])) {
+if (!isset($_SESSION['user'])) {
     header('Location:.');
     exit;
 }
@@ -21,97 +43,82 @@ try {
         )
     );
 } catch (PDOException $e) {
-    //header('Location:..');
-    var_dump($connection);
-    //ex
-}
-
-if(isset($_POST['id'])) {
-    $id = $_POST['id'];
-} else {
-    $url = '.?op=updateproduct&result=noid';
+    $resultado =  -4;
+    $url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
     header('Location: ' . $url);
     exit;
 }
 
 
-if(isset($_POST['name'])) {
-    $name = trim($_POST['name']);
-} else {
-    header('Location: .');
-    exit;
-}
 
-if(isset($_POST['weight'])) {
+
+$name = '';
+$weight = 0.0;
+$height = 0.0;
+$type = '';
+$evolutions = 0;
+
+if (isset($_POST['name']) && isset($_POST['weight']) && isset($_POST['height']) && isset($_POST['p_type']) && isset($_POST['n_evolutions'])) {
+    $name = $_POST['name'];
     $weight = $_POST['weight'];
-} else {
-    header('Location: .');
-    exit;
-}
-
-if(isset($_POST['height'])) {
     $height = $_POST['height'];
-} else {
-    header('Location: .');
-    exit;
-}
-
-if(isset($_POST['p_type'])) {
     $type = $_POST['p_type'];
-} else {
-    header('Location: .');
-    exit;
-}
-
-if(isset($_POST['n_evolutions'])) {
     $evolutions = $_POST['n_evolutions'];
+    $ok = true;
+    $name = trim($name);
+
+    if (strlen($name) < 2 || strlen($name) > 150) {
+        $ok = false;
+    }
+    if (!(is_numeric($weight) && $weight >= 0 && $weight <= 999999999.9)) {
+        $ok = false;
+    }
+    if (!(is_numeric($height) && $height >= 0 && $height <= 999999999.9)) {
+        $ok = false;
+    }
+
+    if (!(is_numeric($evolutions) && $evolutions >= 0 && $evolutions <= 18)) {
+        $ok = false;
+    }
+
+    if ($ok) {
+        $sql = 'update pokemons set nombre = :nombre, peso = :peso, altura = :altura, tipo = :tipo, evoluciones = :evoluciones where id = :id';
+        $sentence = $connection->prepare($sql);
+        $parameters = ['nombre' => $name, 'peso' => $weight, 'altura' => $height, 'tipo' => $type, 'evoluciones' => $evolutions, 'id' => $id];
+        foreach ($parameters as $nombreParametro => $valorParametro) {
+            $sentence->bindValue($nombreParametro, $valorParametro);
+        }
+        try {
+            $sentence->execute();
+            $resultado = $sentence->rowCount();
+            $url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
+        } catch (PDOException $e) {
+            $resultado = -1;
+            $url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
+            save_data_iferror($name,$weight,$height,$type,$evolutions);
+            header('Location: ' . $url);
+            exit;
+        }
+    } else {
+        $resultado = -2;
+        $url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
+        save_data_iferror($name, $weight, $height, $type, $evolutions);
+    }
 } else {
-    header('Location: .');
-    exit;
+    $resultado = -3;
+    $url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
+    save_data_iferror($name, $weight, $height, $type, $evolutions);
 }
 
 
-$ok = true;
+header('Location: ' . $url);
 
-if(strlen($name) < 2 || strlen($name) > 150) {
-    $ok = false;
-}
-
-if(!(is_numeric($weight) && $weight >= 0 && $weight <= 999999999.9)) {
-    $ok = false;
-}
-
-if(!(is_numeric($height) && $height >= 0 && $height <= 999999999.9)) {
-    $ok = false;
-}
-
-if(!(is_numeric($evolutions) && $evolutions >= 0 && $evolutions <= 18)){
-    $ok = false;
-}
-
-$resultado = 0;
-
-if($ok) {
-    $sql = 'update pokemons set nombre = :nombre, peso = :peso, altura = :altura, tipo = :tipo, evoluciones = :evoluciones where id = :id';
-    $sentence = $connection->prepare($sql);
-    $parameters = ['nombre' => $name, 'peso' => $weight, 'altura' => $height, 'tipo' => $type, 'evoluciones' => $evolutions, 'id' => $id];
-    foreach($parameters as $nombreParametro => $valorParametro) {
-        $sentence->bindValue($nombreParametro, $valorParametro);
-    }
-    try {
-        $sentence->execute();
-        $resultado = $sentence->rowCount();
-        $url = '.?op=editproduct&result=' . $resultado;
-    } catch(PDOException $e) {
-    }
-}
-
-if($resultado == 0) {
+/*Esta funcion la voy a utilizar cuando el programa contenga un error para guardar los datos en mi $_SESSION sin tener que repetir lineas de codigo*/
+function save_data_iferror($name, $weight, $height, $type, $evolutions)
+{
     $_SESSION['old']['name'] = $name;
     $_SESSION['old']['weight'] = $weight;
     $_SESSION['old']['height'] = $height;
     $_SESSION['old']['type'] = $type;
     $_SESSION['old']['evolutions'] = $evolutions;
-    $url = 'edit.php?op=editproduct&result=' . $resultado . '&id=' . $id;
 }
-header('Location: ' . $url);

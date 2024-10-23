@@ -98,8 +98,11 @@ if (!$fila = $sentence->fetch()) {
                         }
                 ?>
             </div>
+            <a href="index.php">back</a>
             <hr>
         </div>
+
+        
     </main>
     <footer class="container">
         <p>&copy; Angel 2024</p>
