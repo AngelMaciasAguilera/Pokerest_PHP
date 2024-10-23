@@ -60,10 +60,10 @@ if (!$fila = $sentence->fetch()) {
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="..">Home</a>
+                    <a class="nav-link" href="..">home</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="./">Pokemons</a>
+                    <a class="nav-link" href="./">pokemons</a>
                 </li>
             </ul>
         </div>

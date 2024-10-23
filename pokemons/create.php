@@ -24,6 +24,9 @@ try {
     var_dump($connection);
     //ex
 }
+/*Creamos las variables donde guardaremos el valor que inserte el usuario a la hora de crear un pokemon,
+esto permite que si ocurre un error tengamos los valores que habia puesto el usuario y que no los tenga
+que escribir de nuevo*/
 
 $name = '';
 $weight = 0.000;
@@ -31,6 +34,8 @@ $height = 0.000;
 $type = '';
 $evolutions = 0;
 
+/*Comprobamos si ese valor ya esta declarado en el $_SESSION que es el array donde guardaremos dichos valores,
+si ya esta declarado guardamos ese valor en la variable correspondiente y lo quitamos del array para ganar rendimiento*/
 if(isset($_SESSION['old']['name'])){
     $name = $_SESSION['old']['name'];
     unset($_SESSION['old']['name']);
@@ -79,7 +84,7 @@ if(isset($_SESSION['old']['evolutions'])){
                     <a class="nav-link" href="..">home</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="./">Pokemons</a>
+                    <a class="nav-link" href="./">pokemons</a>
                 </li>
             </ul>
         </div>
@@ -92,6 +97,9 @@ if(isset($_SESSION['old']['evolutions'])){
         </div>
         <div class="container">
             <?php
+            /*Comprobamos si hay declarado algun resultado, si lo hay 
+            comprobamos que el resultado sea mayor que 0 ya que eso indicara que la creacion ha ido correctamente, si es menor que 0
+            imprimimos el correspondiente error. */
             if (isset($_GET['op']) && isset($_GET['result'])) {
                 if ($_GET['result'] >= 0) {
             ?>
@@ -106,6 +114,8 @@ if(isset($_SESSION['old']['evolutions'])){
                         <?php
                                 $error_message = '';
                                 $result = $_GET['result'];
+                                /*Compruebo cada caso posible para imprimir el mensaje de error y por si acaso pongo un valor
+                                por defecto.*/
                                 switch ($result) {
                                     case -1:
                                         $error_message = 'El pokemon que intenta insertar ya existe en la base de datos';
@@ -149,15 +159,26 @@ if(isset($_SESSION['old']['evolutions'])){
                     <label for="name">Select a type for the pokemon</label>
                     <select name="p_type" id="p_type">
                         <?php
+
+                            /*Realizamos una consulta sql que me obtenga todos los tipos de enum existentes*/
                             $sql = "SHOW COLUMNS FROM pokemons LIKE 'tipo'";
                             $statement = $connection->prepare($sql);
                             $statement->execute();
                             $result = $statement->fetch();
 
+                            //Una vez obtenido guardo el array especifico que necesito con los valores en mi variable $enumValues
                             $enumValues = $result['Type'];
+
+                            //Ahora reemplazo los caracteres que no me interesen del array que me devuelve la base de datos
                             $enumValues = str_replace("enum('", "", $enumValues);
                             $enumValues = str_replace("')", "", $enumValues);
+
+                            //Separo cada valor del array con ,
                             $enumValuesArray = explode("','", $enumValues);
+
+                            /*Recorro el array con los valores que necesito y compruebo si es igual al que el usuario hubiera
+                            elegido durante la creacion del pokemon y si es asi le pongo la propiedad selected para que lo seleccione
+                            por defecto*/
                             foreach ($enumValuesArray as $poke_type) {
                                 $isTypeSelected = '';
                                 if ($poke_type === $type) {

@@ -53,11 +53,18 @@ if($row == null) {
     exit;
 }
 
+/*Creamos las variables donde guardaremos el valor que inserte el usuario a la hora de crear un pokemon,
+esto permite que si ocurre un error tengamos los valores que habia puesto el usuario y que no los tenga
+que escribir de nuevo*/
+
 $name = '';
 $weight = 0.000;
 $height = 0.000;
 $type = '';
 $evolutions = 0;
+
+/*Comprobamos si ese valor ya esta declarado en el $_SESSION que es el array donde guardaremos dichos valores,
+si ya esta declarado guardamos ese valor en la variable correspondiente y lo quitamos del array para ganar rendimiento*/
 
 if(isset($_SESSION['old']['name'])){
     $name = $_SESSION['old']['name'];
@@ -105,12 +112,12 @@ if($evolutions == 0) {
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>dwes</title>
+        <title>pokerest</title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     </head>
     <body>
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-            <a class="navbar-brand" href="..">dwes</a>
+            <a class="navbar-brand" href="..">pokerest</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -143,6 +150,8 @@ if($evolutions == 0) {
                         <?php
                                 $error_message = '';
                                 $result = $_GET['result'];
+                                /*Compruebo cada caso posible para imprimir el mensaje de error y por si acaso pongo un valor
+                                por defecto.*/
                                 switch ($result) {
                                     case -1:
                                         $error_message = 'El nombre que intenta asignarle al pokemon ya existe en la base de datos, pruebe otro';
@@ -185,15 +194,24 @@ if($evolutions == 0) {
                         </div>
                         <select name="p_type" id="p_type">
                             <?php
+                                /*Realizamos una consulta sql que me obtenga todos los tipos de enum existentes*/
                                 $sql = "SHOW COLUMNS FROM pokemons LIKE 'tipo'";
                                 $statement = $connection->prepare($sql);
                                 $statement->execute();
                                 $result = $statement->fetch();
-
+                                 //Una vez obtenido guardo el array especifico que necesito con los valores en mi variable $enumValues
                                 $enumValues = $result['Type'];
+
+                                //Ahora reemplazo los caracteres que no me interesen del array que me devuelve la base de datos
                                 $enumValues = str_replace("enum('", "", $enumValues);
                                 $enumValues = str_replace("')", "", $enumValues);
+
+                                //Separo cada valor del array con ,
                                 $enumValuesArray = explode("','", $enumValues);
+
+                                /*Recorro el array con los valores que necesito y compruebo si es igual al que el usuario hubiera
+                                elegido durante la creacion del pokemon y si es asi le pongo la propiedad selected para que lo seleccione
+                                por defecto*/
                                 foreach ($enumValuesArray as $poke_type) {
                                     $isTypeSelected = '';
                                     if ($poke_type === $type) {
@@ -222,7 +240,7 @@ if($evolutions == 0) {
             </div>
         </main>
         <footer class="container">
-            <p>&copy; Pokerest</p>
+            <p>&copy; Angel 2024</p>
         </footer>
         <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

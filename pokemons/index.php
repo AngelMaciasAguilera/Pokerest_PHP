@@ -25,6 +25,8 @@ try {
     var_dump($connection);
     //exit;
 }
+/*Obtengo los registros con los pokemons que hay en mi base de datos*/
+
 $sql = 'select * from pokemons order by id';
 $error = '';
 try {
@@ -93,11 +95,18 @@ try {
                 <thead>
                     <tr>
                         <?php
-                        $sql_table_header = "SHOW COLUMNS FROM pokemons";/* Formo la sentencia para obtener los nombres de las columnas y 
-                                                                            que en caso de meter alguna nueva no haya que cambiarlo manualmente  */
+                        /*Obtengo las columnas de la tabla de pokemons con esta sentencia sql, ademas me devuelve otros datos con 
+                        informacion sobre dichas columnas pero cogeremos solo la columna que queremos con los campos de la tabla 
+                        de esa manera si añadimos un campo en la base de datos no tendremos que ponerlo a mano sino que se mostrara 
+                        automaticamente*/
+                        $sql_table_header = "SHOW COLUMNS FROM pokemons";
                         $header_sentence = $connection->prepare($sql_table_header);
                         $header_sentence->execute();
                         $header_array = [];
+
+                        /*Recorro el array que me devuelve, la sentencia y obtengo los valores que necesito de la columna field que es 
+                        la que contiene el nombre de todas las columnas de mi tabla, ademas lo guardo en mi array auxiliar $header_array
+                        para que despues la obtencion de datos sea automatica y no tengamos que ponerlo todo manualmente.*/
                         while ($header_name = $header_sentence->fetch()) {
                             echo '<th>' . $header_name['Field'] . '</th>';
                             array_push($header_array, $header_name['Field']);
@@ -118,10 +127,14 @@ try {
                 </thead>
                 <tbody>
                     <?php
+
+                    /*Recorro todos los registros que me devuelve la base de datos con los pokemons que contiene*/
                     while ($fila = $sentence->fetch()) {
                     ?>
                         <tr>
                             <?php
+                            /*Hago uso de mi array auxiliar con las cabeceras de mi tabla y en cada vuelta del foreach saco 
+                            el valor especifico y lo imprimo sobre la tabla.*/
                             foreach ($header_array as $columna) {
                                 echo '<td>' . $fila[$columna] . '</td>';
                             }
@@ -158,7 +171,7 @@ try {
         </div>
     </main>
     <footer class="container">
-        <p>&copy;Angek</p>
+        <p>&copy;Angel 2024</p>
     </footer>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
