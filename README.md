@@ -1,6 +1,6 @@
 ## Este proyecto consiste en una aplicacion que contendra datos de pokemon y estará hecha en php puro.
 
-##### Vista principal de la aplicacion
+#### Vista principal de la aplicacion
 
 ![alt text](image.png)
 
